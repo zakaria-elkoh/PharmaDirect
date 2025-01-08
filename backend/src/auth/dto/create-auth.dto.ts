@@ -19,9 +19,5 @@ export class CreateAuthDto {
   @IsString({ message: 'Password must be a string' })
   @IsNotEmpty({ message: 'Password is required' })
   @Length(8, 128, { message: 'Password must be between 8 and 128 characters' })
-  @Matches(/(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])/, {
-    message:
-      'Password must include an uppercase letter, a lowercase letter, a number, and a special character',
-  })
   password: string;
 }
