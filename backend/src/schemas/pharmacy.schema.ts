@@ -18,11 +18,12 @@ export class Pharmacy extends Document {
 
   @Prop([
     {
+      day: { type: String, required: true },
       open: { type: String, required: true },
       close: { type: String, required: true },
     },
   ])
-  openingHours: Array<{ open: string; close: string }>;
+  openingHours: Array<{ day: string; open: string; close: string }>;
 
   @Prop([String])
   services: string[];
