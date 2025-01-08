@@ -35,14 +35,6 @@ export class User extends Document {
   @Prop({ default: false })
   isVerified: boolean;
 
-  @Prop({ default: null })
-  verificationToken: string;
-
-  @Prop({ default: null })
-  resetToken: string;
-
-  @Prop({ default: null })
-  resetTokenExpiration: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
