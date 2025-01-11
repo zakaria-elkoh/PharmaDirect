@@ -1,11 +1,14 @@
-import "./App.css";
-import { Button } from "./components/ui/button";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Login } from "./pages/Login";
 
 function App() {
   return (
-    <main>
-      <Button>Click me</Button>
-    </main>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/" element={<Navigate to="/login" replace />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
