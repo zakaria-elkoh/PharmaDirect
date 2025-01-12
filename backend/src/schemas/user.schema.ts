@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import { Location, LocationSchema } from './location.schema';
-import { Pharmacy } from './pharmacy.schema';
+import { Pharmacy } from '../pharmacy/schema/pharmacy.schema';
 
 @Schema({ timestamps: true })
 export class User extends Document {
@@ -34,7 +34,6 @@ export class User extends Document {
 
   @Prop({ default: false })
   isVerified: boolean;
-
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
