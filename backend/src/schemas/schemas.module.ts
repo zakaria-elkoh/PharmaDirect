@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from './user.schema';
-import { Pharmacy, PharmacySchema } from './pharmacy.schema';
+import { Pharmacy, PharmacySchema } from '../pharmacy/schema/pharmacy.schema';
 import { Review, ReviewSchema } from './review.schema';
 import { Notification, NotificationSchema } from './notification.schema';
 import { DatabaseSeeder } from '../database.seeder';
