@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from './schemas/user.schema';
-import { Pharmacy } from './schemas/pharmacy.schema';
+import { Pharmacy } from './pharmacy/schema/pharmacy.schema';
 import { Review } from './schemas/review.schema';
 import { Notification } from './schemas/notification.schema';
 import * as bcrypt from 'bcryptjs';
