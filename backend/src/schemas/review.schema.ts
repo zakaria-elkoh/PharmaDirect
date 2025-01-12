@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
-import { Pharmacy } from './pharmacy.schema';
+import { Pharmacy } from '../pharmacy/schema/pharmacy.schema';
 import { User } from './user.schema';
 
 @Schema({ timestamps: true })
