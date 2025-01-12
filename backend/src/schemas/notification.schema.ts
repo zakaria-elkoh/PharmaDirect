@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import { User } from './user.schema';
-import { Pharmacy } from './pharmacy.schema';
+import { Pharmacy } from '../pharmacy/schema/pharmacy.schema';
 
 @Schema({ timestamps: true })
 export class Notification extends Document {
