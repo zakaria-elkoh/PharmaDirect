@@ -29,7 +29,7 @@ export class PharmacyService {
     };
 
     const day = date
-      .toLocaleDateString('fr-FR', { weekday: 'long' })
+      .toLocaleDateString('en-US', { weekday: 'long' })
       .toLowerCase();
 
     return this.pharmacyModel.aggregate([
@@ -44,7 +44,6 @@ export class PharmacyService {
       {
         $match: {
           isOnGard: true,
-          'openingHours.day': day,
         },
       },
       {
