@@ -5,7 +5,7 @@ import { HydratedDocument } from 'mongoose';
 export type CatDocument = HydratedDocument<User>;
 
 @Schema({ timestamps: true })
-export class User extends Document {
+export class User {
   @Prop({
     required: [true, 'Username is required'],
     minlength: [3, 'Username must be at least 3 characters'],
@@ -23,7 +23,7 @@ export class User extends Document {
   @Prop({
     required: [true, 'Password is required'],
   })
-  passwordHash: string;
+  password: string;
 
   @Prop({
     enum: {
