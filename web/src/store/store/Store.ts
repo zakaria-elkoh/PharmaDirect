@@ -1,8 +1,10 @@
 import { configureStore } from "@reduxjs/toolkit";
 import authSlice from "../features/authSlice";
+import pharSlice from "../features/pharmacySlice";
 const store = configureStore({
   reducer: {
     auth: authSlice,
+    phar: pharSlice,
   },
 });
 

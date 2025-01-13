@@ -3,7 +3,6 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios, { AxiosResponse } from "axios";
 const api: string = "http://localhost:3000";
 
-
 interface AuthState {
   isLoading: boolean;
   user: any | null;
@@ -42,7 +41,7 @@ export const registers = createAsyncThunk(
 
     try {
       const res: AxiosResponse = await axios.post(
-        api + "/api/v1/auth/register",
+        api + "/auth/register",
         data,
         {
           headers: {
@@ -75,15 +74,11 @@ export const login = createAsyncThunk(
     console.log(api);
 
     try {
-      const res: AxiosResponse = await axios.post(
-        `${api}/auth/login`,
-        data,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const res: AxiosResponse = await axios.post(`${api}/auth/login`, data, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
       console.log("Response from API:", res.data);
 
@@ -251,18 +246,22 @@ const authSlice = createSlice({
       })
       .addCase(registers.fulfilled, (state, action: any) => {
         console.log("is fulfilled");
+        state.status = true;
+        console.log(state.status);
+        
         state.isLoading = false;
         state.user = action.payload;
         console.log("User registered successfully:", action.payload);
         state.isLogin = true;
-        state.token = action.payload.token;
         state.error = null;
-        localStorage.setItem("token", action.payload.token);
+        state.errorLogin = null;
+      
       })
       .addCase(registers.rejected, (state, action: any) => {
         state.isLoading = false;
         state.error = action.payload.response.data.errors;
         state.status = false;
+        state.errorLogin = action.payload.response.data.message;
       });
 
     // login user
@@ -280,7 +279,7 @@ const authSlice = createSlice({
         console.log("User logged in successfully:", action.payload);
         state.token = action.payload.token;
         state.error = null;
-        state.errorLogin = null
+        state.errorLogin = null;
         state.status = true;
         localStorage.setItem("token", action.payload.token);
         console.log(state.token);
