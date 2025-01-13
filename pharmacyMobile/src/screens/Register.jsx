@@ -7,16 +7,48 @@ import {
   StyleSheet,
   Alert,
 } from "react-native";
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
 export default function RegisterScreen({ navigation }) {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     if (username && email && password) {
-      Alert.alert("Registration successful!");
-      navigation.replace("Home");
+      const data = {
+        username,
+        email,
+        password,
+      };
+
+      try {
+        const response = await fetch("http://10.0.2.2:3000/auth/register", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          await AsyncStorage.setItem("userToken", result.token);
+
+          Alert.alert("Registration successful!");
+          console.log("Token stored:", result.token);
+
+          navigation.replace("Home");
+        } else {
+          Alert.alert(
+            "Registration failed!",
+            result.message || "Please try again."
+          );
+        }
+      } catch (error) {
+        Alert.alert("Error", "Something went wrong. Please try again later.");
+        console.error("Error during registration:", error);
+      }
     } else {
       Alert.alert("Please fill in all fields.");
     }
@@ -27,7 +59,6 @@ export default function RegisterScreen({ navigation }) {
       <Text style={styles.title}>Create an Account</Text>
 
       <View style={styles.card}>
-        {/* Username Input */}
         <TextInput
           style={styles.input}
           placeholder="Username"
@@ -36,7 +67,6 @@ export default function RegisterScreen({ navigation }) {
           placeholderTextColor="#aaa"
         />
 
-        {/* Email Input */}
         <TextInput
           style={styles.input}
           placeholder="Email Address"
@@ -46,7 +76,6 @@ export default function RegisterScreen({ navigation }) {
           placeholderTextColor="#aaa"
         />
 
-        {/* Password Input */}
         <TextInput
           style={styles.input}
           placeholder="Password"
@@ -56,7 +85,6 @@ export default function RegisterScreen({ navigation }) {
           placeholderTextColor="#aaa"
         />
 
-        {/* Register Button */}
         <TouchableOpacity
           style={styles.registerButton}
           onPress={handleRegister}
@@ -64,7 +92,6 @@ export default function RegisterScreen({ navigation }) {
           <Text style={styles.buttonText}>Register</Text>
         </TouchableOpacity>
 
-        {/* Go to Login Button */}
         <View style={styles.loginContainer}>
           <Text style={styles.loginText}>Already have an account?</Text>
           <TouchableOpacity onPress={() => navigation.navigate("Login")}>
@@ -81,14 +108,14 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f1f1f1", // Soft background color
+    backgroundColor: "#f1f1f1",
     padding: 20,
   },
   title: {
     fontSize: 30,
     fontWeight: "bold",
     marginBottom: 40,
-    color: "#2E8B57", // Pharmacy-inspired color
+    color: "#2E8B57",
     textAlign: "center",
   },
   card: {
@@ -114,7 +141,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f7f7f7",
   },
   registerButton: {
-    backgroundColor: "#2E8B57", // Pharmacy green
+    backgroundColor: "#2E8B57",
     paddingVertical: 15,
     borderRadius: 8,
     alignItems: "center",

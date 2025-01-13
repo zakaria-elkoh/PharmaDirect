@@ -1,8 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
-import { View, Text, StyleSheet, TouchableWithoutFeedback } from "react-native";
-import { Ionicons } from "@expo/vector-icons"; // Icon library
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableWithoutFeedback,
+  Alert,
+} from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Ionicons } from "@expo/vector-icons";
 import HomeScreen from "./src/screens/HomeScreen";
 import LoginScreen from "./src/screens/Login";
 import RegisterScreen from "./src/screens/Register";
@@ -12,13 +19,12 @@ const Stack = createStackNavigator();
 function CustomHeader({ navigation, isLoggedIn, onLogout }) {
   return (
     <View style={styles.header}>
-      {/* Adding pharmacy-related icon */}
       <TouchableWithoutFeedback onPress={() => navigation.navigate("Home")}>
         <View style={styles.logoContainer}>
           <Ionicons
-            name="medkit" // Medkit icon is used here for pharmacy-related visuals
+            name="medkit"
             size={30}
-            color="#2E8B57" // Pharmacy green color
+            color="#2E8B57"
             style={styles.logo}
           />
           <Text style={styles.headerText}>Future Pharmacy</Text>
@@ -50,7 +56,12 @@ function CustomHeader({ navigation, isLoggedIn, onLogout }) {
             </TouchableWithoutFeedback>
           </>
         ) : (
-          <TouchableWithoutFeedback onPress={onLogout}>
+          <TouchableWithoutFeedback
+            onPress={() => {
+              onLogout();
+              Alert.alert("Logged out successfully!");
+            }}
+          >
             <Ionicons
               name="log-out"
               size={24}
@@ -67,9 +78,20 @@ function CustomHeader({ navigation, isLoggedIn, onLogout }) {
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  const handleLogout = () => {
+  useEffect(() => {
+    const checkToken = async () => {
+      const token = await AsyncStorage.getItem("userToken");
+      console.log(token);
+
+      setIsLoggedIn(!!token);
+    };
+
+    checkToken();
+  }, []);
+
+  const handleLogout = async () => {
+    await AsyncStorage.removeItem("userToken");
     setIsLoggedIn(false);
-    // Here you can add the logout logic, like clearing tokens
   };
 
   return (
@@ -88,7 +110,12 @@ export default function App() {
       >
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="Login">
-          {(props) => <LoginScreen {...props} setIsLoggedIn={setIsLoggedIn} />}
+          {(props) => (
+            <LoginScreen
+              {...props}
+              setIsLoggedIn={setIsLoggedIn} // Pass setIsLoggedIn to LoginScreen
+            />
+          )}
         </Stack.Screen>
         <Stack.Screen name="Register" component={RegisterScreen} />
       </Stack.Navigator>
@@ -96,7 +123,6 @@ export default function App() {
   );
 }
 
-// Styles
 const styles = StyleSheet.create({
   header: {
     height: 70,
@@ -124,7 +150,7 @@ const styles = StyleSheet.create({
   headerText: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#2E8B57", // Pharmacy green color
+    color: "#2E8B57",
   },
   iconsContainer: {
     flexDirection: "row",

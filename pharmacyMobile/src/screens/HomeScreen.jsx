@@ -63,6 +63,8 @@ const pharmacies = [
   },
 ];
 
+
+
 export default function HomeScreen({ navigation }) {
   const showDetails = (pharmacy) => {
     Alert.alert(
