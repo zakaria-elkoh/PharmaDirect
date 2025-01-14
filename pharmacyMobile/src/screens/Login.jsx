@@ -3,22 +3,52 @@ import {
   View,
   Text,
   TextInput,
-  Button,
   StyleSheet,
   Alert,
   TouchableOpacity,
 } from "react-native";
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (email && password) {
-      Alert.alert("Login successful!");
-      navigation.replace("Home");
+      const data = {
+        email,
+        password,
+      };
+
+      try {
+        const response = await fetch("http://10.0.2.2:3000/auth/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          await AsyncStorage.setItem("userToken", result.token);
+
+          Alert.alert("Registration successful!");
+          console.log("Token stored:", result.token);
+
+          navigation.replace("Home");
+        } else {
+          Alert.alert(
+            "Registration failed!",
+            result.message || "Please try again."
+          );
+        }
+      } catch (error) {
+        Alert.alert("Error", "Something went wrong. Please try again later.");
+        console.error("Error during registration:", error);
+      }
     } else {
-      Alert.alert("Please enter both email and password.");
+      Alert.alert("Please fill in all fields.");
     }
   };
 
@@ -69,14 +99,14 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f1f1f1", // Soft background color for a pharmacy feel
+    backgroundColor: "#f1f1f1",
     padding: 20,
   },
   title: {
     fontSize: 30,
     fontWeight: "bold",
     marginBottom: 40,
-    color: "#2E8B57", // Pharmacy-inspired color
+    color: "#2E8B57",
     textAlign: "center",
   },
   card: {
@@ -102,7 +132,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f7f7f7",
   },
   loginButton: {
-    backgroundColor: "#2E8B57", // Pharmacy green
+    backgroundColor: "#2E8B57",
     paddingVertical: 15,
     borderRadius: 8,
     alignItems: "center",
@@ -124,7 +154,7 @@ const styles = StyleSheet.create({
   },
   registerLink: {
     fontSize: 16,
-    color: "#2E8B57", 
+    color: "#2E8B57",
     fontWeight: "600",
   },
 });
