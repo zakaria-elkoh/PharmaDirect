@@ -4,7 +4,12 @@ import { Button } from "../../components/Button";
 import { EditPharmacyModal } from "./EditPharmacyModal";
 import type { Pharmacy } from "../../types";
 import { useAppDispatch, useAppSelector } from "@/hook";
-import { getAllPharmacy } from "@/store/features/pharmacySlice";
+
+import Swal from "sweetalert2";
+import {
+  deletedPharmacy,
+  getAllPharmacy,
+} from "@/store/features/pharmacySlice";
 
 export function PharmaciesList() {
   const [pharmacies, setPharmacies] = useState<Pharmacy[]>([
@@ -31,6 +36,7 @@ export function PharmaciesList() {
 
   const { pharmacys, counterPharmacy } = useAppSelector((state) => state.phar);
   const dispatch = useAppDispatch();
+  console.log(pharmacys);
 
   console.log(pharmacys);
 
@@ -54,8 +60,23 @@ export function PharmaciesList() {
   };
 
   const handleDelete = (id: string) => {
-    // TODO: Implement delete functionality
-    console.log("Delete pharmacy:", id);
+    console.log(id);
+    dispatch(deletedPharmacy(id))
+      .then(() => {
+        Swal.fire({
+          icon: "success",
+          title: "Pharmacy deleted!",
+          text: "The pharmacy has been deleted successfully.",
+          confirmButtonText: "OK",
+        });
+      })
+      .catch((error) => {
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: "Something went wrong while deleting the pharmacy.",
+        });
+      });
   };
 
   return (
@@ -79,14 +100,14 @@ export function PharmaciesList() {
 
           {/* Mobile view */}
           <div className="mt-8 grid gap-4 md:hidden">
-            {pharmacys.map((pharmacy: any) => (
+            {pharmacys?.map((pharmacy: any) => (
               <div
                 key={pharmacy._id}
                 className="bg-white border rounded-lg overflow-hidden"
               >
                 {
                   <img
-                    src="https://images.unsplash.com/photo-1587854692152-cbe660dbde88?auto=format&fit=crop&q=80&w=400"
+                    src={pharmacy.image}
                     className="w-full h-48 object-cover"
                   />
                 }
@@ -138,7 +159,7 @@ export function PharmaciesList() {
                     </Button>
                     <Button
                       variant="outline"
-                      onClick={() => handleDelete(pharmacy.id)}
+                      onClick={() => handleDelete(pharmacy._id)}
                       className="flex-1 text-red-600 hover:text-red-700"
                     >
                       <Trash2 className="w-4 h-4 mr-1" />
@@ -171,13 +192,13 @@ export function PharmaciesList() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white">
-                  {pharmacys.map((pharmacy: any) => (
+                  {pharmacys?.map((pharmacy: any) => (
                     <tr key={pharmacy._id}>
                       <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm">
                         <div className="flex items-center">
                           {
                             <img
-                              src="https://images.unsplash.com/photo-1587854692152-cbe660dbde88?auto=format&fit=crop&q=80&w=400"
+                              src={pharmacy.image}
                               className="h-12 w-12 rounded-lg object-cover mr-3"
                             />
                           }
@@ -229,7 +250,7 @@ export function PharmaciesList() {
                           </Button>
                           <Button
                             variant="outline"
-                            onClick={() => handleDelete(pharmacy.id)}
+                            onClick={() => handleDelete(pharmacy._id)}
                             className="inline-flex items-center text-red-600 hover:text-red-700"
                           >
                             <Trash2 className="w-4 h-4 mr-1" />

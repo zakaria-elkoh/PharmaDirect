@@ -6,6 +6,7 @@ export interface Pharmacy {
   email?: string;
   isOnGard: boolean;
   image?: string;
+  
 }
 
 export interface User {

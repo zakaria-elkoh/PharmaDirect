@@ -7,13 +7,22 @@ import * as bcrypt from 'bcryptjs';
 import { User } from './schemas/user.schema';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
     private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
   ) {}
+
+  generateToken(payload: any, expiresIn: string = '90d'): string {
+    return this.jwtService.sign(payload, {
+      secret: this.configService.get<string>('JWT_SECRET'),
+      expiresIn,
+    });
+  }
 
   async create(createAuthDto: CreateAuthDto) {
     const { username, email, password } = createAuthDto;
@@ -34,10 +43,10 @@ export class AuthService {
       password: hashedPassword,
     });
 
-    return {
-      message: 'User successfully registered.',
-      data: newUser,
-    };
+    const payload = { email: newUser.email, sub: newUser.id };
+    const token = this.generateToken(payload);
+
+    return token;
   }
 
   async login(loginDto: LoginDto) {
@@ -46,7 +55,7 @@ export class AuthService {
     const user = await this.userModel.findOne({ email });
     if (!user) {
       throw new HttpException(
-        'Invalid credentials. Please check your email and password and try again.',
+        'Invalid email or password.',
         HttpStatus.UNAUTHORIZED,
       );
     }
@@ -54,13 +63,13 @@ export class AuthService {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       throw new HttpException(
-        'Invalid credentials. Please check your email and password and try again.',
+        'Invalid email or password.',
         HttpStatus.UNAUTHORIZED,
       );
     }
 
     const payload = { email: user.email, sub: user.id };
-    const token = this.jwtService.sign(payload);
+    const token = this.generateToken(payload);
 
     return { token };
   }
@@ -81,8 +90,14 @@ export class AuthService {
     return { message: 'Password successfully updated' };
   }
 
-  async getUser(user: any) {
-    const userData = await this.userModel.findById(user.sub);
+  async getUser(id: string) {
+    console.log('================');
+
+    console.log(id);
+
+    console.log('================');
+
+    const userData = await this.userModel.findById(id);
     return userData;
   }
 }
