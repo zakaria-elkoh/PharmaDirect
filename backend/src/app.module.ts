@@ -4,6 +4,9 @@ import { AppService } from './app.service';
 import { SchemasModule } from './schemas/schemas.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { NotificationModule } from './notification/notification.module';
+import { FavoriteModule } from './favorite/favorite.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -16,6 +19,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       inject: [ConfigService],
     }),
     AuthModule,
+    NotificationModule,
+    FavoriteModule,
   ],
   controllers: [AppController],
   providers: [AppService],

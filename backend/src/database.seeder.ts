@@ -4,7 +4,7 @@ import { Model } from 'mongoose';
 import { User } from './schemas/user.schema';
 import { Pharmacy } from './schemas/pharmacy.schema';
 import { Review } from './schemas/review.schema';
-import { Notification } from './schemas/notification.schema';
+import { Notification } from './notification/schema/notification.schema';
 import * as bcrypt from 'bcryptjs';
 
 @Injectable()
