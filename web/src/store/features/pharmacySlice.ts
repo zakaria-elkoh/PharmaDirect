@@ -44,8 +44,6 @@ export const getAllPharmacy = createAsyncThunk(
 export const createPharmacy = createAsyncThunk(
   "phar/createPharmacy",
   async (data: any, thunkAPI: any) => {
-    console.log(data);
-
     const dataPharmacy = {
       name: data.name,
       phone: data.phone,
@@ -53,26 +51,26 @@ export const createPharmacy = createAsyncThunk(
       latitude: data.latitude,
       longitude: data.longitude,
       detailedAddress: data.detailedAddress,
-      isOnDuty: false,
+      isOnDuty: data.isOnDuty,
       email: data.email,
       description: data.description,
+      image: data.image,
     };
+
 
     const token = localStorage.getItem("token");
     try {
       const res = await axios.post(`${api}/pharmacies`, dataPharmacy, {
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${token}`,
         },
       });
 
       console.log(res);
-
       return res.data;
     } catch (error: any) {
       console.error(error.response?.data || error.message);
-
       return thunkAPI.rejectWithValue(error);
     }
   }
@@ -101,6 +99,52 @@ export const UpdatePassword = createAsyncThunk(
   }
 );
 
+export const deletedPharmacy = createAsyncThunk(
+  "phar/deletedPharmacy",
+  async (id: string, thunkAPI: any) => {
+    console.log(id);
+
+    const token = localStorage.getItem("token");
+    try {
+      const res = await axios.delete(`${api}/pharmacies/${id}`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return res.data;
+    } catch (error: any) {
+      console.error(error.response?.data || error.message);
+
+      return thunkAPI.rejectWithValue(error);
+    }
+  }
+);
+export const updatePharmacy = createAsyncThunk(
+  "phar/updatePharmacy",
+  async ({ data, id }: { data: any; id: string }, thunkAPI: any) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      return thunkAPI.rejectWithValue("No token found");
+    }
+
+    try {
+      const res = await axios.put(`${api}/pharmacies/${id}`, data, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      console.log(res);
+      return res.data;
+    } catch (error: any) {
+      console.error(error.response?.data || error.message);
+      return thunkAPI.rejectWithValue(error);
+    }
+  }
+);
 // Create the slice
 const pharSlice = createSlice({
   name: "phar",
@@ -145,20 +189,41 @@ const pharSlice = createSlice({
         state.error = action.payload.response.data.message;
       });
 
-    // UpdatePassword
+    // deletedPharmacy
     builder
-      .addCase(UpdatePassword.pending, (state) => {
+      .addCase(deletedPharmacy.pending, (state) => {
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(UpdatePassword.fulfilled, (state, action: any) => {
+      .addCase(deletedPharmacy.fulfilled, (state, action: any) => {
         state.isLoading = false;
         state.error = null;
-        localStorage.setItem("token", action.payload.token);
+        state.counterPharmacy += 1;
+        state.pharmacys = action.payload.data;
+        console.log(action.payload);
       })
-      .addCase(UpdatePassword.rejected, (state, action: any) => {
+      .addCase(deletedPharmacy.rejected, (state, action: any) => {
         state.isLoading = false;
         console.log(action.payload.response.data.message);
+
+        state.error = action.payload.response.data.message;
+      });
+
+    // updatePharmacy
+    builder
+      .addCase(updatePharmacy.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(updatePharmacy.fulfilled, (state, action: any) => {
+        state.isLoading = false;
+        state.error = null;
+        state.counterPharmacy += 1;
+        console.log(action.payload);
+      })
+      .addCase(updatePharmacy.rejected, (state, action: any) => {
+        state.isLoading = false;
+        console.log(action.payload);
 
         state.error = action.payload.response.data.message;
       });

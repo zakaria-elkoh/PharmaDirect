@@ -118,7 +118,7 @@ export default function HomeScreen({ navigation }) {
         pharmacies?.map((pharmacy) => (
           <View key={pharmacy._id} style={styles.card}>
             <Image
-              source={{ uri: "https://via.placeholder.com/150" }}
+              source={{ uri: pharmacy.imageMobile }}
               style={styles.image}
             />
             <View style={styles.cardContent}>

@@ -1,12 +1,10 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { SchemasModule } from './schemas/schemas.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { NotificationModule } from './notification/notification.module';
-import { FavoriteModule } from './favorite/favorite.module';
 import { AuthModule } from './auth/auth.module';
+import { FavoriteModule } from './favorite/favorite.module';
 
 @Module({
   imports: [
@@ -18,8 +16,8 @@ import { AuthModule } from './auth/auth.module';
       }),
       inject: [ConfigService],
     }),
+
     AuthModule,
-    NotificationModule,
     FavoriteModule,
   ],
   controllers: [AppController],

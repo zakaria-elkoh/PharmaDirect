@@ -8,7 +8,7 @@ import { createPharmacy } from "@/store/features/pharmacySlice";
 import Swal from "sweetalert2";
 
 interface PharmacyFormValues {
-  image: string;
+  image: FileList;
   name: string;
   phone: string;
   city: string;
@@ -25,10 +25,13 @@ export function AddPharmacy() {
     register,
     handleSubmit,
     formState: { errors },
-    reset,
   } = useForm<PharmacyFormValues>();
   const { isLoading } = useAppSelector((state) => state.phar);
   const dispatch = useAppDispatch();
+  const [imagePreview, setImagePreview] = useState<any>();
+
+  const [image, setImage] = useState<any>();
+  const [preview, setPreview] = useState<string>("");
 
   const onSubmit: SubmitHandler<PharmacyFormValues> = async (data) => {
     try {
@@ -42,6 +45,7 @@ export function AddPharmacy() {
           Swal.showLoading();
         },
       });
+      data.image = image;
 
       await dispatch(createPharmacy(data));
 
@@ -51,9 +55,10 @@ export function AddPharmacy() {
         text: "The pharmacy has been added successfully.",
       });
 
-      reset();
+      // reset();
     } catch (error) {
       console.error("Failed to add pharmacy:", error);
+
       Swal.fire({
         icon: "error",
         title: "Oops...",
@@ -61,6 +66,20 @@ export function AddPharmacy() {
       });
     }
   };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Create a URL for the selected image file and set it for preview
+      const imageUrl = URL.createObjectURL(file);
+      setImagePreview(imageUrl);
+      setImage(file); // Store the image file itself
+    }
+  };
+
+ 
+
+
 
   return (
     <Layout>
@@ -93,12 +112,23 @@ export function AddPharmacy() {
                         </div>
                         <input
                           {...register("image", {
-                            required: "Image URL is required",
+                            required: "Image is required",
                           })}
-                          type="url"
+                          type="file"
+                          accept="image/*"
                           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                          onChange={handleImageChange}
                         />
                       </div>
+                      {imagePreview && (
+                        <div className="mt-2 w-32 h-32 border-2 border-gray-300 rounded-lg overflow-hidden">
+                          <img
+                            src={imagePreview}
+                            alt="Image preview"
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
                       {errors.image && (
                         <p className="text-red-500 text-sm">
                           {errors.image.message}
@@ -106,6 +136,9 @@ export function AddPharmacy() {
                       )}
                     </div>
                   </div>
+
+                  {/* Remaining form inputs for name, phone, etc... */}
+                  {/* Add similar input fields as before for other form values like name, phone, etc. */}
 
                   {/* Name Input */}
                   <div>
@@ -279,7 +312,6 @@ export function AddPharmacy() {
                       Open on weekends for emergency services
                     </label>
                   </div>
-
                   {/* Submit Button */}
                   <div className="flex justify-end">
                     <Button type="submit" isLoading={isLoading}>
