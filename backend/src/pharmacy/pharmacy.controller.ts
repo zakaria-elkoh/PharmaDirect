@@ -11,6 +11,9 @@ import {
   UseInterceptors,
   BadRequestException,
   UploadedFile,
+  Query,
+  ParseFloatPipe,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { CreatePharmacyDto } from './dto/createPharmacy';
 import { UpdatePharmacyDto } from './dto/updatePharmacy';
@@ -141,5 +144,35 @@ export class PharmacyController {
       return { message: 'Pharmacy not found or operation failed!', data: null };
     }
     return { message: 'Pharmacy set as On Duty successfully!', data: pharmacy };
+  }
+
+  @Get('guard')
+  async findGuardPharmacies(
+    @Query('latitude', ParseFloatPipe) latitude: number,
+    @Query('longitude', ParseFloatPipe) longitude: number,
+    @Query('date') date?: string,
+    @Query('maxDistance', ParseIntPipe) maxDistance?: number,
+  ) {
+    return this.pharmacyService.findGuardPharmacies({
+      latitude,
+      longitude,
+      date: date ? new Date(date) : undefined,
+      maxDistance,
+    });
+  }
+
+  @Get('search')
+  async searchPharmacies(
+    @Query('query') query?: string,
+    @Query('latitude', ParseFloatPipe) latitude?: number,
+    @Query('longitude', ParseFloatPipe) longitude?: number,
+    @Query('maxDistance', ParseIntPipe) maxDistance?: number,
+  ) {
+    return this.pharmacyService.searchPharmacies({
+      query,
+      latitude,
+      longitude,
+      maxDistance,
+    });
   }
 }
