@@ -6,182 +6,136 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  TextInput,
-  Modal,
-  Platform,
-  Dimensions,
+  Alert,
 } from "react-native";
-import axios from "axios";
 import { MaterialIcons } from "@expo/vector-icons";
-import * as Location from "expo-location";
-import MapView, { Marker } from "react-native-maps";
-import DateTimePicker from "@react-native-community/datetimepicker";
+
+// const pharmacies = [
+//   {
+//     id: 1,
+//     name: "Pharmacy 1",
+//     email: "pharmacy1@example.com",
+//     phone: "+123456789",
+//     image: "https://via.placeholder.com/150",
+//     isOnDuty: true,
+//     location: "123 Main St, City, Country",
+//     rating: 4.5,
+//   },
+//   {
+//     id: 2,
+//     name: "Pharmacy 2",
+//     email: "pharmacy2@example.com",
+//     phone: "+987654321",
+//     image: "https://via.placeholder.com/150",
+//     isOnDuty: false,
+//     location: "456 Park Ave, City, Country",
+//     rating: 3.0,
+//   },
+//   {
+//     id: 3,
+//     name: "Pharmacy 3",
+//     email: "pharmacy3@example.com",
+//     phone: "+123987654",
+//     image: "https://via.placeholder.com/150",
+//     isOnDuty: true,
+//     location: "789 Maple Rd, City, Country",
+//     rating: 4.8,
+//   },
+//   {
+//     id: 4,
+//     name: "Pharmacy 4",
+//     email: "pharmacy4@example.com",
+//     phone: "+456123987",
+//     image: "https://via.placeholder.com/150",
+//     isOnDuty: false,
+//     location: "321 Oak Ln, City, Country",
+//     rating: 3.5,
+//   },
+//   {
+//     id: 5,
+//     name: "Pharmacy 5",
+//     email: "pharmacy5@example.com",
+//     phone: "+654987123",
+//     image: "https://via.placeholder.com/150",
+//     isOnDuty: true,
+//     location: "654 Pine Blvd, City, Country",
+//     rating: 5.0,
+//   },
+// ];
 
 export default function HomeScreen({ navigation }) {
   const [pharmacies, setPharmacies] = useState([]);
-  const [location, setLocation] = useState(null);
-  const [searchAddress, setSearchAddress] = useState("");
-  const [showMap, setShowMap] = useState(false);
-  const [selectedPharmacy, setSelectedPharmacy] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [date, setDate] = useState(new Date());
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [showDetails, setShowDetails] = useState(false);
-
-  // Obtenir la localisation actuelle
-  const getCurrentLocation = async () => {
-    try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        alert("Permission de localisation refusée");
-        return;
-      }
-      const location = await Location.getCurrentPositionAsync({});
-      setLocation(location.coords);
-      fetchNearbyPharmacies(location.coords, date);
-    } catch (error) {
-      alert("Erreur lors de la récupération de la localisation");
-    }
-  };
-
-  // Rechercher une adresse
-  const searchByAddress = async () => {
-    try {
-      const result = await Location.geocodeAsync(searchAddress);
-      if (result.length > 0) {
-        const coords = {
-          latitude: result[0].latitude,
-          longitude: result[0].longitude,
-        };
-        setLocation(coords);
-        fetchNearbyPharmacies(coords, date);
-      }
-    } catch (error) {
-      alert("Erreur lors de la recherche de l'adresse");
-    }
-  };
-
-  // Récupérer les pharmacies de garde
-  const fetchNearbyPharmacies = async (coords, selectedDate) => {
-    try {
-      setLoading(true);
-      const dateStr = selectedDate.toISOString().split("T")[0];
-      const response = await axios(
-        `http://localhost:3000/pharmacy/guard?latitude=${coords.latitude}&longitude=${coords.longitude}&date=${dateStr}&maxDistance=5000`
-      );
-      const data = await response.json();
-      setPharmacies(data.data);
-    } catch (error) {
-      alert("Erreur lors de la récupération des pharmacies");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Récupérer les détails d'une pharmacie
-  const fetchPharmacyDetails = async (pharmacyId) => {
-    try {
-      const response = await axios(
-        `http://localhost:3000/pharmacy/${pharmacyId}`
-      );
-      const data = await response.json();
-      setSelectedPharmacy(data.data);
-      setShowDetails(true);
-    } catch (error) {
-      alert("Erreur lors de la récupération des détails");
-    }
-  };
 
   useEffect(() => {
-    getCurrentLocation();
-  }, []);
+    const fetchPharmacies = async () => {
+      try {
+        const response = await fetch("http://10.0.2.2:3000/pharmacies");
+        if (!response.ok) {
+          throw new Error("Failed to fetch pharmacies");
+        }
+        const data = await response.json();
+        setPharmacies(data.data); // Update state with the fetched data
+      } catch (error) {
+        console.error("Error fetching pharmacies:", error);
+      }
+    };
 
-  // Modal des détails de la pharmacie
-  const PharmacyDetailsModal = () => (
-    <Modal
-      visible={showDetails}
-      animationType="slide"
-      onRequestClose={() => setShowDetails(false)}
-    >
-      <ScrollView style={styles.modalContainer}>
-        <TouchableOpacity
-          style={styles.closeButton}
-          onPress={() => setShowDetails(false)}
-        >
-          <MaterialIcons name="close" size={24} color="black" />
-        </TouchableOpacity>
-
-        {selectedPharmacy && (
-          <View style={styles.detailsContainer}>
-            <Image
-              source={{
-                uri:
-                  selectedPharmacy.image || "https://via.placeholder.com/150",
-              }}
-              style={styles.detailsImage}
-            />
-            <Text style={styles.detailsTitle}>{selectedPharmacy.name}</Text>
-
-            {/* Informations de contact */}
-            <View style={styles.infoSection}>
-              <Text style={styles.sectionTitle}>Contact</Text>
-              <Text>Téléphone: {selectedPharmacy.phone}</Text>
-              <Text>Email: {selectedPharmacy.email}</Text>
-              <Text>Adresse: {selectedPharmacy.detailedAddress}</Text>
-            </View>
-
-            {/* Horaires */}
-            <View style={styles.infoSection}>
-              <Text style={styles.sectionTitle}>Horaires d'ouverture</Text>
-              <Text>{selectedPharmacy.openingHours || "24h/24"}</Text>
-            </View>
-
-            {/* Services */}
-            <View style={styles.infoSection}>
-              <Text style={styles.sectionTitle}>Services</Text>
-              {selectedPharmacy.services?.map((service, index) => (
-                <Text key={index}>• {service}</Text>
-              ))}
-            </View>
-
-            {/* Mini carte */}
-            {location && (
-              <MapView
-                style={styles.miniMap}
-                initialRegion={{
-                  latitude: selectedPharmacy.latitude,
-                  longitude: selectedPharmacy.longitude,
-                  latitudeDelta: 0.01,
-                  longitudeDelta: 0.01,
-                }}
-              >
-                <Marker
-                  coordinate={{
-                    latitude: selectedPharmacy.latitude,
-                    longitude: selectedPharmacy.longitude,
-                  }}
-                  title={selectedPharmacy.name}
-                />
-              </MapView>
-            )}
-          </View>
-        )}
-      </ScrollView>
-    </Modal>
-  );
+    fetchPharmacies(); // Call the async function
+  }, []); //
+  const showDetails = (pharmacy) => {
+    Alert.alert(
+      "Pharmacy Details",
+      `Name: ${pharmacy.name}\nEmail: ${pharmacy.email}\nPhone: ${
+        pharmacy.phone
+      }\nLocation: ${pharmacy.location}\nDuty: ${
+        pharmacy.isOnDuty ? "On Duty" : "Not On Duty"
+      }`,
+      [{ text: "OK" }]
+    );
+  };
 
   return (
-    <View style={styles.container}>
-      {/* Barre de recherche d'adresse */}
-      <View style={styles.searchContainer}>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Entrez une adresse..."
-          value={searchAddress}
-          onChangeText={setSearchAddress}
+    <ScrollView style={styles.container}>
+      {/* Hero Section */}
+      <View style={styles.heroSection}>
+        <Image
+          source={require("../asset/hero.webp")}
+          style={styles.heroImage}
         />
-        <TouchableOpacity style={styles.searchButton} onPress={searchByAddress}>
-          <Text style={styles.buttonText}>Rechercher</Text>
+        <Text style={styles.heroTitle}>
+          Welcome to the Pharmacy Duty Tracker
+        </Text>
+        <Text style={styles.heroDescription}>
+          Discover which pharmacy is on duty and ready to assist you anytime,
+          day or night.
+        </Text>
+        <TouchableOpacity style={styles.ctaButton}>
+          <Text style={styles.ctaButtonText}>Explore Pharmacies</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Navigation Buttons */}
+      <View style={styles.navigationButtons}>
+        <TouchableOpacity style={styles.ctaButton}>
+          <MaterialIcons
+            name="local-pharmacy"
+            size={24}
+            color="#fff"
+            style={styles.buttonIcon}
+          />
+          <Text style={styles.ctaButtonText}>Explore Pharmacies</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.mapButton}
+          onPress={() => navigation.navigate("Map")}
+        >
+          <MaterialIcons
+            name="map"
+            size={24}
+            color="#fff"
+            style={styles.buttonIcon}
+          />
+          <Text style={styles.mapButtonText}>View Map</Text>
         </TouchableOpacity>
       </View>
 
@@ -189,7 +143,7 @@ export default function HomeScreen({ navigation }) {
         pharmacies?.map((pharmacy) => (
           <View key={pharmacy._id} style={styles.card}>
             <Image
-              source={{ uri: "https://via.placeholder.com/150" }}
+              source={{ uri: pharmacy.imageMobile }}
               style={styles.image}
             />
             <View style={styles.cardContent}>
@@ -241,127 +195,168 @@ export default function HomeScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
-  },
-  searchContainer: {
-    flexDirection: "row",
-    padding: 10,
-    backgroundColor: "white",
-    elevation: 2,
-  },
-  searchInput: {
-    flex: 1,
-    height: 40,
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 5,
-    paddingHorizontal: 10,
-    marginRight: 10,
-  },
-  searchButton: {
-    backgroundColor: "#2E8B57",
-    padding: 10,
-    borderRadius: 5,
-    justifyContent: "center",
-  },
-  dateButton: {
-    backgroundColor: "white",
-    padding: 15,
-    margin: 10,
-    borderRadius: 5,
-    alignItems: "center",
-    elevation: 2,
-  },
-  toggleButton: {
-    backgroundColor: "#1E90FF",
-    padding: 10,
-    margin: 10,
-    borderRadius: 5,
-    alignItems: "center",
-  },
-  buttonText: {
-    color: "white",
-    fontWeight: "bold",
-  },
-  map: {
-    flex: 1,
-  },
-  pharmacyList: {
-    flex: 1,
-  },
-  pharmacyCard: {
-    flexDirection: "row",
-    backgroundColor: "white",
-    margin: 10,
-    borderRadius: 10,
-    elevation: 2,
-    padding: 10,
-  },
-  pharmacyImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 5,
-  },
-  pharmacyInfo: {
-    flex: 1,
-    marginLeft: 10,
-  },
-  pharmacyName: {
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  pharmacyAddress: {
-    fontSize: 14,
-    color: "#666",
-    marginTop: 5,
-  },
-  dutyStatus: {
-    marginTop: 5,
-    fontWeight: "bold",
-  },
-  onDuty: {
-    color: "#2E8B57",
-  },
-  offDuty: {
-    color: "#dc3545",
-  },
-  distance: {
-    fontSize: 12,
-    color: "#666",
-    marginTop: 5,
-  },
-  modalContainer: {
-    flex: 1,
-    backgroundColor: "white",
-  },
-  closeButton: {
-    padding: 15,
-    alignSelf: "flex-end",
-  },
-  detailsContainer: {
     padding: 20,
+    backgroundColor: "#f0f0f0",
+    paddingBottom: 40,
+    marginBottom: 20,
   },
-  detailsImage: {
+  heroSection: {
+    backgroundColor: "#fff",
+    padding: 20,
+    marginBottom: 20,
+    borderRadius: 10,
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    alignItems: "center",
+  },
+  heroImage: {
     width: "100%",
     height: 200,
     borderRadius: 10,
+    marginBottom: 15,
   },
-  detailsTitle: {
+  heroTitle: {
     fontSize: 24,
     fontWeight: "bold",
-    marginVertical: 15,
+    color: "#333",
+    textAlign: "center",
   },
-  infoSection: {
-    marginVertical: 15,
+  heroDescription: {
+    fontSize: 16,
+    color: "#555",
+    textAlign: "center",
+    marginTop: 10,
   },
-  sectionTitle: {
+  ctaButton: {
+    flex: 1,
+    backgroundColor: "#1E90FF",
+    paddingVertical: 15,
+    paddingHorizontal: 15,
+    borderRadius: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+  },
+  ctaButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+    textTransform: "uppercase",
+  },
+  card: {
+    backgroundColor: "#fff",
+    padding: 20,
+    marginBottom: 20,
+    borderRadius: 20,
+    elevation: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+  },
+  image: {
+    width: "100%",
+    height: 200,
+    borderRadius: 15,
+    marginBottom: 15,
+  },
+  cardContent: {
+    flex: 1,
+    justifyContent: "center",
+  },
+  pharmacyName: {
     fontSize: 18,
     fontWeight: "bold",
-    marginBottom: 10,
+    color: "#333",
   },
-  miniMap: {
-    height: 200,
-    marginVertical: 15,
+  email: {
+    fontSize: 14,
+    color: "#555",
+    marginVertical: 5,
+  },
+  phone: {
+    fontSize: 14,
+    color: "#555",
+    marginVertical: 5,
+  },
+  ratingContainer: {
+    flexDirection: "row",
+    marginVertical: 5,
+  },
+  dutyStatus: {
+    fontSize: 14,
+    fontWeight: "bold",
+    marginVertical: 5,
+  },
+  dutyOn: {
+    color: "#2E8B57",
+  },
+  dutyOff: {
+    color: "#dc3545",
+  },
+  location: {
+    fontSize: 12,
+    color: "#777",
+  },
+  detailsButton: {
+    marginTop: 10,
+    backgroundColor: "#2E8B57",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    alignItems: "center",
+  },
+  detailsButtonText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "bold",
+  },
+  logoutButton: {
+    marginTop: 30,
+    backgroundColor: "#FF6347",
+    padding: 15,
+    borderRadius: 5,
+    alignItems: "center",
+  },
+  logoutText: {
+    color: "#fff",
+    fontSize: 16,
+  },
+  navigationButtons: {
+    flexDirection: "row",
+    gap: 10,
+    marginBottom: 20,
+    paddingHorizontal: 5,
+  },
+  mapButton: {
+    flex: 1,
+    backgroundColor: "#2E8B57",
+    paddingVertical: 15,
+    paddingHorizontal: 15,
     borderRadius: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+  },
+  buttonIcon: {
+    marginRight: 8,
+  },
+  mapButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });
