@@ -9,6 +9,15 @@ export class PharmacyService {
     @InjectModel(Pharmacy.name) private pharmacyModel: Model<Pharmacy>,
   ) {}
 
+  async getAllPharmacies() {
+    try {
+      return await this.pharmacyModel.find().exec();
+    } catch (error) {
+      console.error(error);
+      throw new Error('Erreur lors de la récupération des pharmacies');
+    }
+  }
+  
   async findGuardPharmacies(params: {
     latitude: number;
     longitude: number;
