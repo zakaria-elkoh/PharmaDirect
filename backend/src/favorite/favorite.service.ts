@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from '../auth/schemas/user.schema';
@@ -16,7 +16,7 @@ export class FavoriteService {
 
    
     if (user.favorites.includes(pharmacyId)) {
-      throw new Error('Pharmacy already in favorites');
+      throw new BadRequestException('Pharmacy already in favorites');
     }
 
     user.favorites.push(pharmacyId); 

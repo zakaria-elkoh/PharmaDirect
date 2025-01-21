@@ -1,31 +1,36 @@
-import { Controller, Post, Delete, Get, Param, Body } from '@nestjs/common';
+import { Controller, Post, Delete, Get, Param, Body, UseGuards, Req } from '@nestjs/common';
 import { FavoriteService } from './favorite.service';
+import { AuthGuard } from 'src/guard/auth.guard';
 
 @Controller('favorites')
+@UseGuards(AuthGuard)
 export class FavoriteController {
   constructor(private readonly favoriteService: FavoriteService) {}
 
 
-  @Post(':userId')
-  async addFavorite(
-    @Param('userId') userId: string,
-    @Body('pharmacyId') pharmacyId: string,
-  ) {
-    return this.favoriteService.addFavorite(userId, pharmacyId);
-  }
-
-
-  @Delete(':userId/:pharmacyId')
-  async removeFavorite(
-    @Param('userId') userId: string,
+  @Get('addfavort/:pharmacyId')
+  async ajouteFavorite(
+    
     @Param('pharmacyId') pharmacyId: string,
+    @Req() Req: any
   ) {
-    return this.favoriteService.removeFavorite(userId, pharmacyId);
+  
+    return this.favoriteService.addFavorite(Req.user._id, pharmacyId);
+
   }
 
 
-  @Get(':userId')
-  async getUserFavorites(@Param('userId') userId: string) {
-    return this.favoriteService.getUserFavorites(userId);
+  @Delete('removefavorit/:pharmacyId')
+  async deleteFavorite(
+    @Param('pharmacyId') pharmacyId: string,
+  @Req() Req: any
+  ) {
+    return this.favoriteService.removeFavorite(Req.user._id, pharmacyId);
+  }
+
+
+  @Get('getUserFavorit')
+  async listeUserFavorites(@Req() Req: any) {
+    return this.favoriteService.getUserFavorites(Req.user._id);
   }
 }

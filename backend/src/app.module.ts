@@ -5,6 +5,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { FavoriteModule } from './favorite/favorite.module';
+import { PharmacyModule } from './pharmacy/pharmacy.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { FavoriteModule } from './favorite/favorite.module';
 
     AuthModule,
     FavoriteModule,
+    PharmacyModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -13,6 +13,8 @@ import { Ionicons } from "@expo/vector-icons";
 import HomeScreen from "./src/screens/HomeScreen";
 import LoginScreen from "./src/screens/Login";
 import RegisterScreen from "./src/screens/Register";
+import FavoritesScreen from "./src/screens/FavoritesScreen";
+import { FavoritesProvider } from "./src/contexte/FavoritesContext";
 
 const Stack = createStackNavigator();
 
@@ -56,6 +58,15 @@ function CustomHeader({ navigation, isLoggedIn, onLogout }) {
             </TouchableWithoutFeedback>
           </>
         ) : (
+          <>
+          <TouchableWithoutFeedback onPress={() => navigation.navigate("Favorites")}>
+            <Ionicons
+              name="heart"
+              size={24}
+              color="red"
+              style={styles.icon}
+            />
+          </TouchableWithoutFeedback>
           <TouchableWithoutFeedback
             onPress={() => {
               onLogout();
@@ -69,6 +80,7 @@ function CustomHeader({ navigation, isLoggedIn, onLogout }) {
               style={styles.icon}
             />
           </TouchableWithoutFeedback>
+          </>
         )}
       </View>
     </View>
@@ -95,6 +107,7 @@ export default function App() {
   };
 
   return (
+    <FavoritesProvider>
     <NavigationContainer>
       <Stack.Navigator
         initialRouteName="Home"
@@ -109,12 +122,14 @@ export default function App() {
         }}
       >
         <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen name="Favorites" component={FavoritesScreen} />
         <Stack.Screen name="Login">
           {(props) => <LoginScreen {...props} setIsLoggedIn={setIsLoggedIn} />}
         </Stack.Screen>
         <Stack.Screen name="Register" component={RegisterScreen} />
       </Stack.Navigator>
     </NavigationContainer>
+    </FavoritesProvider>
   );
 }
 
