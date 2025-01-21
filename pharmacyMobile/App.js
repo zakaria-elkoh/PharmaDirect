@@ -13,6 +13,7 @@ import { Ionicons } from "@expo/vector-icons";
 import HomeScreen from "./src/screens/HomeScreen";
 import LoginScreen from "./src/screens/Login";
 import RegisterScreen from "./src/screens/Register";
+import MapScreen from "./src/screens/MapScreen";
 
 const Stack = createStackNavigator();
 
@@ -71,6 +72,9 @@ function CustomHeader({ navigation, isLoggedIn, onLogout }) {
           </TouchableWithoutFeedback>
         )}
       </View>
+
+      <Stack.Screen name="Map" component={MapScreen} />
+      
     </View>
   );
 }
@@ -96,6 +100,7 @@ export default function App() {
 
   return (
     <NavigationContainer>
+
       <Stack.Navigator
         initialRouteName="Home"
         screenOptions={{
@@ -110,9 +115,15 @@ export default function App() {
       >
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="Login">
-          {(props) => <LoginScreen {...props} setIsLoggedIn={setIsLoggedIn} />}
+          {(props) => (
+            <LoginScreen
+              {...props}
+              setIsLoggedIn={setIsLoggedIn}
+            />
+          )}
         </Stack.Screen>
         <Stack.Screen name="Register" component={RegisterScreen} />
+        <Stack.Screen name="Map" component={MapScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
