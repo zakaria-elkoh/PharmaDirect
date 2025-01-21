@@ -4,8 +4,8 @@ import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
+import { FavoriteModule } from './favorite/favorite.module';
 import { PharmacyModule } from './pharmacy/pharmacy.module';
-import { uploadModule } from './uploads/upload.module';
 
 @Module({
   imports: [
@@ -19,8 +19,8 @@ import { uploadModule } from './uploads/upload.module';
     }),
 
     AuthModule,
+    FavoriteModule,
     PharmacyModule,
-    uploadModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
+import { Pharmacy } from 'src/schemas/pharmacy.schema';
 
 export type UserDocument = HydratedDocument<User>;
 
@@ -38,6 +39,10 @@ export class User {
 
   @Prop({ default: true })
   notificationsEnabled: boolean;
+
+  @Prop({ type: [{ type: String, ref: 'Pharmacy' }], default: [] })
+  favorites: string[]; 
+  
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

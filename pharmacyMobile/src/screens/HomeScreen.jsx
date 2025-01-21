@@ -8,7 +8,10 @@ import {
   ScrollView,
   Alert,
 } from "react-native";
-import { MaterialIcons } from "@expo/vector-icons";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 
 // const pharmacies = [
 //   {
@@ -65,6 +68,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 
 export default function HomeScreen({ navigation }) {
   const [pharmacies, setPharmacies] = useState([]);
+  const [favorites, setFavorites] = useState([]);
 
   useEffect(() => {
     const fetchPharmacies = async () => {
@@ -74,14 +78,57 @@ export default function HomeScreen({ navigation }) {
           throw new Error("Failed to fetch pharmacies");
         }
         const data = await response.json();
-        setPharmacies(data.data); // Update state with the fetched data
+        setPharmacies(data.data); 
       } catch (error) {
         console.error("Error fetching pharmacies:", error);
       }
     };
 
-    fetchPharmacies(); // Call the async function
-  }, []); //
+    fetchPharmacies(); 
+  }, []); 
+
+  const toggleFavorite = async (pharmacyId) => {
+    const token = await AsyncStorage.getItem("userToken");
+  
+    
+    console.log("Token:", token);
+    console.log("Pharmacy ID:", pharmacyId);
+    const isFav = favorites.includes(pharmacyId);
+    const url = `http://10.0.2.2:3000/favorites/${
+      isFav ? "removefavorit" : "addfavort"
+    }/${pharmacyId}`;
+    
+  
+    try {
+      const response = await fetch(url, {
+        method: isFav ? "DELETE" : "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
+      const responseText = await response.text();
+      console.log("API Response:", responseText);
+  
+      if (!response.ok) {
+        throw new Error(`Failed to update favorites: ${response.status}`);
+      }
+  
+      setFavorites((prevFavorites) =>
+        isFav
+          ? prevFavorites.filter((id) => id !== pharmacyId)
+          : [...prevFavorites, pharmacyId]
+      );
+  
+      console.log("Updated Favorites:", favorites);
+    } catch (error) {
+      console.error("Error updating favorites:", error.message);
+    }
+  };
+  
+
+  const isFavorite = (pharmacyId) => favorites.includes(pharmacyId);
   const showDetails = (pharmacy) => {
     Alert.alert(
       "Pharmacy Details",
@@ -155,11 +202,19 @@ export default function HomeScreen({ navigation }) {
               </Text>
               <Text style={styles.location}>{pharmacy.detailedAddress}</Text>
               <TouchableOpacity
-                style={styles.detailsButton}
-                onPress={() => showDetails(pharmacy)}
-              >
-                <Text style={styles.detailsButtonText}>See Details</Text>
-              </TouchableOpacity>
+    style={styles.detailsButton}
+    onPress={() => showDetails(pharmacy)}
+  >
+    <Text style={styles.detailsButtonText}>See Details</Text>
+  </TouchableOpacity>
+  <TouchableOpacity onPress={() => toggleFavorite(pharmacy._id)}>
+  <FontAwesome
+    name={isFavorite(pharmacy._id) ? "heart" : "heart-o"}
+    size={24}
+    color={isFavorite(pharmacy._id) ? "#e74c3c" : "#555"}
+    style={styles.favoriteIcon}
+  />
+</TouchableOpacity>
             </View>
           </View>
         ))}
@@ -303,4 +358,14 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
   },
+  favoriteIcon: {
+    marginLeft: 15,
+  },
+  buttonRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between", 
+    marginTop: 10, 
+  },
+  
 });
