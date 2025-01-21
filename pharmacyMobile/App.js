@@ -15,6 +15,7 @@ import LoginScreen from "./src/screens/Login";
 import RegisterScreen from "./src/screens/Register";
 import FavoritesScreen from "./src/screens/FavoritesScreen";
 import { FavoritesProvider } from "./src/contexte/FavoritesContext";
+import MapScreen from "./src/screens/MapScreen";
 
 const Stack = createStackNavigator();
 
@@ -108,27 +109,30 @@ export default function App() {
 
   return (
     <FavoritesProvider>
-    <NavigationContainer>
-      <Stack.Navigator
-        initialRouteName="Home"
-        screenOptions={{
-          header: ({ navigation }) => (
-            <CustomHeader
-              navigation={navigation}
-              isLoggedIn={isLoggedIn}
-              onLogout={handleLogout}
-            />
-          ),
-        }}
-      >
-        <Stack.Screen name="Home" component={HomeScreen} />
-        <Stack.Screen name="Favorites" component={FavoritesScreen} />
-        <Stack.Screen name="Login">
-          {(props) => <LoginScreen {...props} setIsLoggedIn={setIsLoggedIn} />}
-        </Stack.Screen>
-        <Stack.Screen name="Register" component={RegisterScreen} />
-      </Stack.Navigator>
-    </NavigationContainer>
+      <NavigationContainer>
+        <Stack.Navigator
+          initialRouteName="Home"
+          screenOptions={{
+            header: ({ navigation }) => (
+              <CustomHeader
+                navigation={navigation}
+                isLoggedIn={isLoggedIn}
+                onLogout={handleLogout}
+              />
+            ),
+          }}
+        >
+          <Stack.Screen name="Home" component={HomeScreen} />
+          <Stack.Screen name="Favorites" component={FavoritesScreen} />
+          <Stack.Screen name="Login">
+            {(props) => (
+              <LoginScreen {...props} setIsLoggedIn={setIsLoggedIn} />
+            )}
+          </Stack.Screen>
+          <Stack.Screen name="Register" component={RegisterScreen} />
+          <Stack.Screen name="Map" component={MapScreen} />
+        </Stack.Navigator>
+      </NavigationContainer>
     </FavoritesProvider>
   );
 }

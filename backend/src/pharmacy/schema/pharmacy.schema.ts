@@ -36,6 +36,10 @@ export class Pharmacy extends Document {
 
   @Prop({ required: false })
   description?: string; // Optional description for the pharmacy
+
+  @Prop({ default: false })
+  isOnGard: boolean;
 }
 
 export const PharmacySchema = SchemaFactory.createForClass(Pharmacy);
+PharmacySchema.index({ 'address.location': '2dsphere' });

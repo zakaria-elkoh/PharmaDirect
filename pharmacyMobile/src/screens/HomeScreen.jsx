@@ -161,6 +161,31 @@ export default function HomeScreen({ navigation }) {
         </TouchableOpacity>
       </View>
 
+      {/* Navigation Buttons */}
+      <View style={styles.navigationButtons}>
+        <TouchableOpacity style={styles.ctaButton}>
+          <MaterialIcons
+            name="local-pharmacy"
+            size={24}
+            color="#fff"
+            style={styles.buttonIcon}
+          />
+          <Text style={styles.ctaButtonText}>Explore Pharmacies</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.mapButton}
+          onPress={() => navigation.navigate("Map")}
+        >
+          <MaterialIcons
+            name="map"
+            size={24}
+            color="#fff"
+            style={styles.buttonIcon}
+          />
+          <Text style={styles.mapButtonText}>View Map</Text>
+        </TouchableOpacity>
+      </View>
+
       {pharmacies.length > 0 &&
         pharmacies?.map((pharmacy) => (
           <View key={pharmacy._id} style={styles.card}>
@@ -202,19 +227,19 @@ export default function HomeScreen({ navigation }) {
               </Text>
               <Text style={styles.location}>{pharmacy.detailedAddress}</Text>
               <TouchableOpacity
-    style={styles.detailsButton}
-    onPress={() => showDetails(pharmacy)}
-  >
-    <Text style={styles.detailsButtonText}>See Details</Text>
-  </TouchableOpacity>
-  <TouchableOpacity onPress={() => toggleFavorite(pharmacy._id)}>
-  <FontAwesome
-    name={isFavorite(pharmacy._id) ? "heart" : "heart-o"}
-    size={24}
-    color={isFavorite(pharmacy._id) ? "#e74c3c" : "#555"}
-    style={styles.favoriteIcon}
-  />
-</TouchableOpacity>
+                style={styles.detailsButton}
+                onPress={() => showDetails(pharmacy)}
+              >
+                <Text style={styles.detailsButtonText}>See Details</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => toggleFavorite(pharmacy._id)}>
+                <FontAwesome
+                  name={isFavorite(pharmacy._id) ? "heart" : "heart-o"}
+                  size={24}
+                  color={isFavorite(pharmacy._id) ? "#e74c3c" : "#555"}
+                  style={styles.favoriteIcon}
+                />
+              </TouchableOpacity>
             </View>
           </View>
         ))}
@@ -261,12 +286,14 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   ctaButton: {
-    marginTop: 20,
+    flex: 1,
     backgroundColor: "#1E90FF",
-    paddingVertical: 12,
-    paddingHorizontal: 25,
+    paddingVertical: 15,
+    paddingHorizontal: 15,
     borderRadius: 10,
+    flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
     elevation: 3,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 3 },
@@ -364,8 +391,30 @@ const styles = StyleSheet.create({
   buttonRow: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between", 
-    marginTop: 10, 
+    justifyContent: "space-between",
+    marginTop: 10,
   },
-  
+  mapButton: {
+    flex: 1,
+    backgroundColor: "#2E8B57",
+    paddingVertical: 15,
+    paddingHorizontal: 15,
+    borderRadius: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+  },
+  buttonIcon: {
+    marginRight: 8,
+  },
+  mapButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
 });
