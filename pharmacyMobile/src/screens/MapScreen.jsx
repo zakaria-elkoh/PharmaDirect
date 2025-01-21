@@ -56,7 +56,7 @@ export default function MapScreen() {
   const fetchGuardPharmacies = async (latitude, longitude) => {
     setLoading(true);
     try {
-      const response = await axios.get(`${BASE_URL}/pharmacy/guard`, {
+      const response = await axios.get(`${BASE_URL}/pharmacies/guard`, {
         params: {
           latitude,
           longitude,
@@ -93,7 +93,7 @@ export default function MapScreen() {
 
     setLoading(true);
     try {
-      const response = await axios.get(`${BASE_URL}/pharmacy/search`, {
+      const response = await axios.get(`${BASE_URL}/pharmacies/search`, {
         params: {
           query: searchQuery,
           latitude: userLocation.latitude,

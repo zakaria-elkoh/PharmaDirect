@@ -30,6 +30,37 @@ import { extname } from 'path';
 export class PharmacyController {
   constructor(private readonly pharmacyService: PharmacyServices) {}
 
+  @Get('guard')
+  async findGuardPharmacies(
+    @Query('latitude', ParseFloatPipe) latitude: number,
+    @Query('longitude', ParseFloatPipe) longitude: number,
+    @Query('date') date?: string,
+    @Query('maxDistance', ParseIntPipe) maxDistance?: number,
+  ) {
+    const data = await this.pharmacyService.findGuardPharmacies({
+      latitude,
+      longitude,
+      date: date ? new Date(date) : undefined,
+      maxDistance,
+    });
+    return { message: 'Guard pharmacies retrieved successfully', data };
+  }
+
+  @Get('search')
+  async searchPharmacies(
+    @Query('query') query?: string,
+    @Query('latitude', ParseFloatPipe) latitude?: number,
+    @Query('longitude', ParseFloatPipe) longitude?: number,
+    @Query('maxDistance', ParseIntPipe) maxDistance?: number,
+  ) {
+    const data = await this.pharmacyService.searchPharmacies({
+      query,
+      latitude,
+      longitude,
+      maxDistance,
+    });
+    return { message: 'Pharmacies searched successfully', data };
+  }
   // Create a new pharmacy
 
   @Post()
@@ -144,35 +175,5 @@ export class PharmacyController {
       return { message: 'Pharmacy not found or operation failed!', data: null };
     }
     return { message: 'Pharmacy set as On Duty successfully!', data: pharmacy };
-  }
-
-  @Get('guard')
-  async findGuardPharmacies(
-    @Query('latitude', ParseFloatPipe) latitude: number,
-    @Query('longitude', ParseFloatPipe) longitude: number,
-    @Query('date') date?: string,
-    @Query('maxDistance', ParseIntPipe) maxDistance?: number,
-  ) {
-    return this.pharmacyService.findGuardPharmacies({
-      latitude,
-      longitude,
-      date: date ? new Date(date) : undefined,
-      maxDistance,
-    });
-  }
-
-  @Get('search')
-  async searchPharmacies(
-    @Query('query') query?: string,
-    @Query('latitude', ParseFloatPipe) latitude?: number,
-    @Query('longitude', ParseFloatPipe) longitude?: number,
-    @Query('maxDistance', ParseIntPipe) maxDistance?: number,
-  ) {
-    return this.pharmacyService.searchPharmacies({
-      query,
-      latitude,
-      longitude,
-      maxDistance,
-    });
   }
 }
