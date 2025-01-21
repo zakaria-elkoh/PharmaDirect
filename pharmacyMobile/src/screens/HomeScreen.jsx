@@ -185,105 +185,56 @@ export default function HomeScreen({ navigation }) {
         </TouchableOpacity>
       </View>
 
-      {/* Sélecteur de date */}
-      <TouchableOpacity
-        style={styles.dateButton}
-        onPress={() => setShowDatePicker(true)}
-      >
-        <Text style={styles.dateButtonText}>
-          Sélectionner une date: {date.toLocaleDateString()}
-        </Text>
-      </TouchableOpacity>
-
-      {showDatePicker && (
-        <DateTimePicker
-          value={date}
-          mode="date"
-          onChange={(event, selectedDate) => {
-            setShowDatePicker(false);
-            if (selectedDate) {
-              setDate(selectedDate);
-              if (location) {
-                fetchNearbyPharmacies(location, selectedDate);
-              }
-            }
-          }}
-        />
-      )}
-
-      {/* Bouton pour basculer entre la liste et la carte */}
-      <TouchableOpacity
-        style={styles.toggleButton}
-        onPress={() => setShowMap(!showMap)}
-      >
-        <Text style={styles.buttonText}>
-          {showMap ? "Voir la liste" : "Voir la carte"}
-        </Text>
-      </TouchableOpacity>
-
-      {showMap ? (
-        // Vue carte
-        <MapView
-          style={styles.map}
-          region={{
-            latitude: location?.latitude || 0,
-            longitude: location?.longitude || 0,
-            latitudeDelta: 0.1,
-            longitudeDelta: 0.1,
-          }}
-        >
-          {pharmacies.map((pharmacy) => (
-            <Marker
-              key={pharmacy._id}
-              coordinate={{
-                latitude: pharmacy.latitude,
-                longitude: pharmacy.longitude,
-              }}
-              title={pharmacy.name}
-              description={pharmacy.isOnDuty ? "De garde" : "Fermée"}
-              onPress={() => fetchPharmacyDetails(pharmacy._id)}
+      {pharmacies.length > 0 &&
+        pharmacies?.map((pharmacy) => (
+          <View key={pharmacy._id} style={styles.card}>
+            <Image
+              source={{ uri: "https://via.placeholder.com/150" }}
+              style={styles.image}
             />
-          ))}
-        </MapView>
-      ) : (
-        // Vue liste
-        <ScrollView style={styles.pharmacyList}>
-          {pharmacies.map((pharmacy) => (
-            <TouchableOpacity
-              key={pharmacy._id}
-              style={styles.pharmacyCard}
-              onPress={() => fetchPharmacyDetails(pharmacy._id)}
-            >
-              <Image
-                source={{
-                  uri: pharmacy.image || "https://via.placeholder.com/150",
-                }}
-                style={styles.pharmacyImage}
-              />
-              <View style={styles.pharmacyInfo}>
-                <Text style={styles.pharmacyName}>{pharmacy.name}</Text>
-                <Text style={styles.pharmacyAddress}>
-                  {pharmacy.detailedAddress}
-                </Text>
-                <Text
-                  style={[
-                    styles.dutyStatus,
-                    pharmacy.isOnDuty ? styles.onDuty : styles.offDuty,
-                  ]}
-                >
-                  {pharmacy.isOnDuty ? "De garde" : "Fermée"}
-                </Text>
-                <Text style={styles.distance}>
-                  {pharmacy.distance?.toFixed(1)} km
-                </Text>
+            <View style={styles.cardContent}>
+              <Text style={styles.pharmacyName}>{pharmacy.name}</Text>
+              <Text style={styles.email}>{pharmacy.email}</Text>
+              <Text style={styles.phone}>{pharmacy.phone}</Text>
+              <View style={styles.ratingContainer}>
+                {[...Array(5)]?.map((_, index) => (
+                  <MaterialIcons
+                    key={index}
+                    name={
+                      index < Math.floor(pharmacy?.rating || 3)
+                        ? "star"
+                        : index < 3
+                        ? "star-half"
+                        : "star-border"
+                    }
+                    size={20}
+                    color={
+                      index < Math.floor(pharmacy.rating || 3)
+                        ? "#FFD700"
+                        : "#bbb"
+                    }
+                  />
+                ))}
               </View>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      )}
-
-      <PharmacyDetailsModal />
-    </View>
+              <Text
+                style={[
+                  styles.dutyStatus,
+                  pharmacy.isOnDuty ? styles.dutyOn : styles.dutyOff,
+                ]}
+              >
+                {pharmacy.isOnDuty ? "On Duty" : "Not On Duty"}
+              </Text>
+              <Text style={styles.location}>{pharmacy.detailedAddress}</Text>
+              <TouchableOpacity
+                style={styles.detailsButton}
+                onPress={() => showDetails(pharmacy)}
+              >
+                <Text style={styles.detailsButtonText}>See Details</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        ))}
+    </ScrollView>
   );
 }
 

@@ -16,6 +16,7 @@ import { PharmacyModule } from './pharmacy/pharmacy.module';
       }),
       inject: [ConfigService],
     }),
+
     AuthModule,
     PharmacyModule,
   ],
