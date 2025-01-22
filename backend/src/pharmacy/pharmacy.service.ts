@@ -116,24 +116,12 @@ export class PharmacyServices {
         },
       },
       {
-        $addFields: {
-          openingHours: {
-            $filter: {
-              input: '$openingHours',
-              as: 'hour',
-              cond: { $eq: ['$$hour.day', day] },
-            },
-          },
-        },
-      },
-      {
         $project: {
+          _id: 1,
           name: 1,
-          address: 1,
-          phone: 1,
           distance: 1,
-          openingHours: { $arrayElemAt: ['$openingHours', 0] },
-          isOnGard: 1,
+          day: 1,
+          openingHours: 1,
         },
       },
       {
