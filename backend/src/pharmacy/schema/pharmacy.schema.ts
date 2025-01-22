@@ -39,7 +39,16 @@ export class Pharmacy extends Document {
 
   @Prop({ default: false })
   isOnGard: boolean;
+
+  @Prop({
+    type: { type: String, enum: ['Point'], required: true },
+    coordinates: { type: [Number], required: true },
+  })
+  location: {
+    type: 'Point'; // GeoJSON point type
+    coordinates: [number, number]; // Longitude, Latitude
+  };
 }
 
 export const PharmacySchema = SchemaFactory.createForClass(Pharmacy);
-PharmacySchema.index({ 'address.location': '2dsphere' });
+PharmacySchema.index({ location: '2dsphere' });
