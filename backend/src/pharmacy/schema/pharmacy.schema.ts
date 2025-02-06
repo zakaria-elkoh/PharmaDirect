@@ -39,7 +39,40 @@ export class Pharmacy extends Document {
 
   @Prop({ default: false })
   isOnGard: boolean;
+
+  @Prop({
+    type: {
+      type: String,
+      enum: ['Point'],
+      default: 'Point',
+    },
+    coordinates: {
+      type: [Number],
+      required: true,
+    },
+  })
+  location: {
+    type: string;
+    coordinates: [number, number];
+  };
 }
 
 export const PharmacySchema = SchemaFactory.createForClass(Pharmacy);
-PharmacySchema.index({ 'address.location': '2dsphere' });
+// Index géospatial pour les recherches de proximité
+PharmacySchema.index({ location: '2dsphere' });
+
+// Index pour améliorer les performances des recherches
+PharmacySchema.index({ isOnGard: 1 });
+PharmacySchema.index({ name: 1 });
+PharmacySchema.index({ city: 1 });
+
+// Middleware pre-save pour mettre à jour automatiquement le champ location
+PharmacySchema.pre('save', function(next) {
+  if (this.latitude && this.longitude) {
+    this.location = {
+      type: 'Point',
+      coordinates: [this.longitude, this.latitude] // MongoDB utilise [longitude, latitude]
+    };
+  }
+  next();
+});
