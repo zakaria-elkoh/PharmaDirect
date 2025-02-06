@@ -172,17 +172,20 @@ export default function HomeScreen({ navigation }) {
           />
           <Text style={styles.ctaButtonText}>Explore Pharmacies</Text>
         </TouchableOpacity>
+        
         <TouchableOpacity
-          style={styles.mapButton}
-          onPress={() => navigation.navigate("Map")}
+          style={styles.searchButton}
+          onPress={() => navigation.navigate("Search")}
         >
           <MaterialIcons
-            name="map"
+            name="search"
             size={24}
             color="#fff"
             style={styles.buttonIcon}
           />
-          <Text style={styles.mapButtonText}>View Map</Text>
+          <Text style={styles.searchButtonText}>
+            Rechercher une pharmacie de garde
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -413,6 +416,23 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   mapButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  searchButton: {
+    flex: 1,
+    backgroundColor: "#2E8B57",
+    paddingVertical: 15,
+    paddingHorizontal: 15,
+    borderRadius: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 10,
+    marginBottom: 10,
+  },
+  searchButtonText: {
     color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
