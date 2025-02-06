@@ -1,8 +1,14 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { CreatePharmacyDto } from './dto/createPharmacy';
 import { Pharmacy } from 'src/schemas/pharmacy.schema';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
+import { PipelineStage } from 'mongoose';
 import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
@@ -81,65 +87,53 @@ export class PharmacyServices {
   async findGuardPharmacies(params: {
     latitude: number;
     longitude: number;
-    date?: Date;
-    maxDistance?: number;
   }) {
-    const {
-      latitude,
-      longitude,
-      date = new Date(),
-      maxDistance = 10000,
-    } = params;
+    try {
+      // Trouver toutes les pharmacies de garde
+      const pharmacies = await this.pharmacyModel.find({
+        isOnGard: true
+      }).exec();
 
-    // Création du point GeoJSON avec le type littéral "Point"
-    const point = {
-      type: 'Point' as const,
-      coordinates: [longitude, latitude] as [number, number],
-    };
+      // Ajouter la distance pour chaque pharmacie
+      const pharmaciesWithDistance = pharmacies.map(pharmacy => {
+        const distance = this.calculateDistance(
+          params.latitude,
+          params.longitude,
+          pharmacy.latitude,
+          pharmacy.longitude
+        );
 
-    const day = date
-      .toLocaleDateString('en-US', { weekday: 'long' })
-      .toLowerCase();
+        return {
+          ...pharmacy.toObject(),
+          distance: Math.round(distance * 1000) // Convertir en mètres
+        };
+      });
 
-    return this.pharmacyModel.aggregate([
-      {
-        $geoNear: {
-          near: point,
-          distanceField: 'distance',
-          maxDistance,
-          spherical: true,
-        },
-      },
-      {
-        $match: {
-          isOnGard: true,
-        },
-      },
-      {
-        $addFields: {
-          openingHours: {
-            $filter: {
-              input: '$openingHours',
-              as: 'hour',
-              cond: { $eq: ['$$hour.day', day] },
-            },
-          },
-        },
-      },
-      {
-        $project: {
-          name: 1,
-          address: 1,
-          phone: 1,
-          distance: 1,
-          openingHours: { $arrayElemAt: ['$openingHours', 0] },
-          isOnGard: 1,
-        },
-      },
-      {
-        $sort: { distance: 1 },
-      },
-    ]);
+      // Trier par distance
+      pharmaciesWithDistance.sort((a, b) => a.distance - b.distance);
+
+      return {
+        success: true,
+        data: pharmaciesWithDistance,
+        count: pharmaciesWithDistance.length
+      };
+
+    } catch (error) {
+      console.error('Error finding guard pharmacies:', error);
+      throw error;
+    }
+  }
+
+  private calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    const R = 6371; // Rayon de la Terre en km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c; // Distance en km
   }
 
   // Get pharmacy details
@@ -194,5 +188,19 @@ export class PharmacyServices {
 
     return this.pharmacyModel.aggregate(aggregation);
   }
-  
+
+  // get pharmcies OnGuard
+  async getPharmaciesOnGuard(): Promise<Pharmacy[]> {
+    try {
+      const pharmaciesOnGuard = await this.pharmacyModel
+        .find({
+          isOnGard: true,
+        })
+        .exec();
+
+      return pharmaciesOnGuard;
+    } catch (error) {
+      throw new Error(`Failed to fetch pharmacies on guard: ${error.message}`);
+    }
+  }
 }
