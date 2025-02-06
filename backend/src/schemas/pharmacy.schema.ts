@@ -33,6 +33,12 @@ export class Pharmacy extends Document {
 
   @Prop({ default: false })
   isOnGard: boolean;
+
+  @Prop({ required: true })
+  latitude: number;
+
+  @Prop({ required: true })
+  longitude: number;
 }
 
 export const PharmacySchema = SchemaFactory.createForClass(Pharmacy);
