@@ -14,6 +14,8 @@ import {
   Query,
   ParseFloatPipe,
   ParseIntPipe,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { CreatePharmacyDto } from './dto/createPharmacy';
 import { UpdatePharmacyDto } from './dto/updatePharmacy';
@@ -88,6 +90,66 @@ export class PharmacyController {
     return { message: 'Pharmacies retrieved successfully!', data: pharmacies };
   }
 
+  // Get pharmcies OnGuard
+  @Get('on-guard')
+  async getPharmaciesOnGuard(): Promise<{
+    message: string;
+    data: Pharmacy[];
+    count: number;
+  }> {
+    try {
+      const pharmaciesOnGuard =
+        await this.pharmacyService.getPharmaciesOnGuard();
+      return {
+        message: 'Pharmacies de garde récupérées avec succès',
+        data: pharmaciesOnGuard,
+        count: pharmaciesOnGuard.length,
+      };
+    } catch (error) {
+      throw new BadRequestException({
+        message: 'Erreur lors de la récupération des pharmacies de garde',
+        error: error.message,
+      });
+    }
+  }
+  @Get('guard')
+  async findGuardPharmacies(
+    @Query('latitude', ParseFloatPipe) latitude: number,
+    @Query('longitude', ParseFloatPipe) longitude: number,
+  ) {
+    try {
+      const result = await this.pharmacyService.findGuardPharmacies({
+        latitude,
+        longitude,
+      });
+      return result;
+    } catch (error) {
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'Failed to find guard pharmacies',
+          message: error.message,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Get('search')
+  async searchPharmacies(
+    @Query('query') query?: string,
+    @Query('latitude', ParseFloatPipe) latitude?: number,
+    @Query('longitude', ParseFloatPipe) longitude?: number,
+    @Query('maxDistance', ParseIntPipe) maxDistance?: number,
+  ) {
+    return this.pharmacyService.searchPharmacies({
+      query,
+      latitude,
+      longitude,
+      maxDistance,
+    });
+  }
+
   // Get a pharmacy by ID
   @Get(':id')
   async findOne(
@@ -146,33 +208,8 @@ export class PharmacyController {
     return { message: 'Pharmacy set as On Duty successfully!', data: pharmacy };
   }
 
-  @Get('guard')
-  async findGuardPharmacies(
-    @Query('latitude', ParseFloatPipe) latitude: number,
-    @Query('longitude', ParseFloatPipe) longitude: number,
-    @Query('date') date?: string,
-    @Query('maxDistance', ParseIntPipe) maxDistance?: number,
-  ) {
-    return this.pharmacyService.findGuardPharmacies({
-      latitude,
-      longitude,
-      date: date ? new Date(date) : undefined,
-      maxDistance,
-    });
-  }
-
-  @Get('search')
-  async searchPharmacies(
-    @Query('query') query?: string,
-    @Query('latitude', ParseFloatPipe) latitude?: number,
-    @Query('longitude', ParseFloatPipe) longitude?: number,
-    @Query('maxDistance', ParseIntPipe) maxDistance?: number,
-  ) {
-    return this.pharmacyService.searchPharmacies({
-      query,
-      latitude,
-      longitude,
-      maxDistance,
-    });
+  @Get(':id')
+  async getPharmacyById(@Param('id') id: string) {
+    return await this.pharmacyService.getPharmacyById(id);
   }
 }
