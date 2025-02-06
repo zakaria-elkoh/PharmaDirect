@@ -16,6 +16,9 @@ import RegisterScreen from "./src/screens/Register";
 import FavoritesScreen from "./src/screens/FavoritesScreen";
 import { FavoritesProvider } from "./src/contexte/FavoritesContext";
 import MapScreen from "./src/screens/MapScreen";
+import SearchScreen from "./src/screens/SearchScreen";
+import NearbyPharmacies from "./src/screens/NearbyPharmacies";
+import PharmacyDetails from "./src/screens/PharmacyDetails";
 
 const Stack = createStackNavigator();
 
@@ -130,7 +133,22 @@ export default function App() {
             )}
           </Stack.Screen>
           <Stack.Screen name="Register" component={RegisterScreen} />
+          <Stack.Screen name="Search" component={SearchScreen} />
           <Stack.Screen name="Map" component={MapScreen} />
+          <Stack.Screen
+            name="NearbyPharmacies"
+            component={NearbyPharmacies}
+            options={{
+              title: "Pharmacies à proximité",
+            }}
+          />
+          <Stack.Screen
+            name="PharmacyDetails"
+            component={PharmacyDetails}
+            options={{
+              headerShown: false,
+            }}
+          />
         </Stack.Navigator>
       </NavigationContainer>
     </FavoritesProvider>
