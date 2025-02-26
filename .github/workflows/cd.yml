@@ -1,0 +1,84 @@
+name: Deploy to Amazon ECR & ECS
+
+on:
+  push:
+    branches:
+      - dev
+      # - ci/cd-pipeline
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  ECR_REGISTRY: 050451398633.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+  ECS_CLUSTER: pharmacyDirect
+  ECS_SERVICE: pharmacyDirect
+  ECS_TASK_DEFINITION: pharmacyDirect-1
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push Backend
+        id: build-backend
+        env:
+          BACKEND_REPO: pharmacyDirect-backend
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $BACKEND_REPO:$IMAGE_TAG -f ./backend/Dockerfile ./backend
+          docker tag $BACKEND_REPO:$IMAGE_TAG $ECR_REGISTRY/$BACKEND_REPO:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$BACKEND_REPO:$IMAGE_TAG
+          echo "backend_image=$ECR_REGISTRY/$BACKEND_REPO:$IMAGE_TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push Frontend
+        id: build-frontend
+        env:
+          FRONTEND_REPO: pharmacyDirect-frontend
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $FRONTEND_REPO:$IMAGE_TAG -f ./frontend/Dockerfile ./frontend
+          docker tag $FRONTEND_REPO:$IMAGE_TAG $ECR_REGISTRY/$FRONTEND_REPO:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$FRONTEND_REPO:$IMAGE_TAG
+          echo "frontend_image=$ECR_REGISTRY/$FRONTEND_REPO:$IMAGE_TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Download task definition
+        run: |
+          aws ecs describe-task-definition --task-definition ${{ env.ECS_TASK_DEFINITION }} \
+          --query taskDefinition > task-definition.json
+
+      - name: Update task definition images
+        run: |
+          jq --arg BACKEND "${{ steps.build-backend.outputs.backend_image }}" \
+             --arg FRONTEND "${{ steps.build-frontend.outputs.frontend_image }}" \
+          '.containerDefinitions[0].image = $BACKEND | .containerDefinitions[1].image = $FRONTEND' \
+          task-definition.json > updated-task-definition.json
+          mv updated-task-definition.json task-definition.json
+
+      - name: Deploy to ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+      - name: echo cluster and service
+        run: |
+          echo ${{ env.ECS_CLUSTER }}
+          echo ${{ env.ECS_SERVICE }}
+
+      - name: Force new deployment
+        run: |
+          aws ecs update-service --cluster ${{ env.ECS_CLUSTER }} --service ${{ env.ECS_SERVICE }} --force-new-deployment
